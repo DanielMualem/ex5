@@ -4,6 +4,7 @@
 #include "Driver.h"
 #include "TripInfo.h"
 #include <deque>
+#include <pthread.h>
 
 /**
  * TaxiCenter Class.
@@ -26,5 +27,7 @@ public:
     void moveAll();
     virtual ~TaxiCenter();
     void assign();
+    int getDriversNum();
+    vector<Driver*> getDriversList();
 };
 #endif //EX1_TAXICENTER_H

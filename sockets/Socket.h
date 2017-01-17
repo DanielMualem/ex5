@@ -78,7 +78,7 @@ public:
 	* The Function operation: sending the input data to the socket         *
 	* who connect to this socket. pure virtual method					   *
 	***********************************************************************/
-	virtual int sendData(string data) = 0;
+	virtual int sendData(string data, int clientDescriptor) = 0;
 	/***********************************************************************
 	* function name: recive	`											   *
 	* The Input: none										               *
@@ -86,11 +86,17 @@ public:
 	* The Function operation: getting data from the other socket and print *
 	* the data															   *
 	***********************************************************************/
-	virtual int reciveData(char* buffer, int size) = 0;
-
-
-
-
+	virtual int receiveData(char* buffer, int size, int clientDescriptor) = 0;
+	/***********************************************************************
+    * function name: acceptOneClient									   *
+    * The Input: None                                                      *
+    * The output: int number representing the descriptorCommunicateClient  *
+    *    if it server or no-negative integer in client case                *
+    *    or -1 when failed.                                                *
+    * The Function operation: getting data from the other socket to,	   *
+    * enter it to the buffer and print the data							   *
+    ***********************************************************************/
+	virtual int acceptOneClient() = 0;
 };
 
 #endif /* SOCKET_H_ */

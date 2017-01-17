@@ -25,5 +25,6 @@ public:
     void move();
     StandardCab();
     virtual ~StandardCab();
+    string toString() const;
 };
 #endif //EX1_STANDARDCAB_H

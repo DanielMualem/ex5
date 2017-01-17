@@ -27,6 +27,7 @@ private:
     Node* location;
     TripInfo* trip;
     deque<Node*> path;
+    int clientDescriptor;
 
     friend class boost::serialization::access;
     template<class Archive>
@@ -57,6 +58,10 @@ public:
     virtual ~Driver();
     int getCabID() const;
     void setPath(deque<Node*> path);
+    void setClientDescriptor(int clientDescriptor);
+    int getClientDescriptor();
+    string toString() const;
+    friend ostream& operator<<(ostream& os, const Driver& obj);
 };
 
 #endif //EX1_DRIVER_H

@@ -1,4 +1,8 @@
 #include "TaxiCenter.h"
+#include <mutex>
+
+pthread_mutex_t myMutex;
+
 /**
  * TaxiCenter ctor.
  * @return - TaxiCenter object.
@@ -112,4 +116,11 @@ void TaxiCenter::assign() {
             this->drivers[i]->setPath(path);
         }
     }
+}
+int TaxiCenter::getDriversNum(){
+    return int(this->drivers.size());
+}
+
+vector<Driver*> TaxiCenter::getDriversList(){
+    return this->drivers;
 }

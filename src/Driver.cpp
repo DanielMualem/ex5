@@ -150,3 +150,25 @@ void Driver::setPath(deque<Node*> path){
 int Driver::getCabID() const {
     return cabId;
 }
+void Driver::setClientDescriptor(int clientDescriptor){
+    this->clientDescriptor = clientDescriptor;
+}
+int Driver::getClientDescriptor(){
+    return this->clientDescriptor;
+}
+ostream& operator<<(ostream& os, const Driver& obj) {
+    os << obj.toString() << endl;
+    return os;
+}
+
+string Driver::toString() const {
+
+    stringstream sx;
+    sx << this->cabId;
+    string cabId = sx.str();
+    stringstream sy;
+    sy << this->age;
+    string age = sy.str();
+
+    return "my id is: " + cabId + " my age is: " + age;
+}

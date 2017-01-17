@@ -1,5 +1,4 @@
 #include <iostream>
-#include "../sockets/Udp.h"
 #include "MartialStatus.h"
 #include "Driver.h"
 #include "LuxuryCab.h"
@@ -15,13 +14,13 @@
 #include <boost/iostreams/stream.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
+#include "../sockets/Tcp.h"
 
 BOOST_CLASS_EXPORT_GUID(Point, "Point");
 BOOST_CLASS_EXPORT_GUID(LuxuryCab, "LuxuryCab");
 BOOST_CLASS_EXPORT_GUID(StandardCab, "StandardCab");
 
 using namespace std;
-using namespace boost::archive;
 
 /**
  * createMartialStat function.
@@ -44,6 +43,9 @@ MartialStat createMartialStat (char statusChar) {
 }
 
 int main(int argc, char* argv[]) {
+    /*Client client(argv[1], atoi(argv[2]), argv[3]);
+    client.Connect();*/
+
     int id, age, experience, cabId;
     MartialStat status;
     char statusChar, dummy;
@@ -51,8 +53,12 @@ int main(int argc, char* argv[]) {
     status = createMartialStat(statusChar);
     Driver* driver = new Driver(id, age, status, experience, cabId);
 
-    Socket* udp = new Udp(0, atoi(argv[2]), argv[1]);
-    udp->initialize();
+    cout << "creating client socket/tcp\n";
+    Socket* tcp = new Tcp(0, atoi(argv[2]), argv[1]);
+
+    cout << "initializing client\n";
+    tcp->initialize();
+
     std::string serial_str;
     boost::iostreams::back_insert_device<std::string> inserter(serial_str);
     boost::iostreams::stream<boost::iostreams::back_insert_device<std::string> > s(inserter);
@@ -60,21 +66,24 @@ int main(int argc, char* argv[]) {
     oa << driver;
     s.flush();
     char buffer[4096];
-    udp->sendData(serial_str);
+    cout << "sending data from client to server\n";
+    tcp->sendData(serial_str, 0);
 
     Cab *driverCab;
     char *end = buffer + 4095;
-    udp->reciveData(buffer, sizeof(buffer));
+    cout << "receiving data from server to client\n";
+    tcp->receiveData(buffer, sizeof(buffer), 0);
     boost::iostreams::basic_array_source<char> device(buffer, end);
     boost::iostreams::stream<boost::iostreams::basic_array_source<char> > s2(device);
     boost::archive::binary_iarchive ia(s2);
     ia >> driverCab;
     driver->setTaxiCab(driverCab);
-
+    cout << *driverCab;
+    cout << *driver;
     while (true) {
-        udp->reciveData(buffer, sizeof(buffer));
+        tcp->receiveData(buffer, sizeof(buffer), 0);
 
-        if (atoi(buffer) == -1) {
+        if (atoi(buffer) == 7) {
             break;
         } else {
             Node* loc;
@@ -87,9 +96,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
-
     delete driverCab;
     delete driver;
-    delete udp;
+    delete tcp;
     return 0;
 }

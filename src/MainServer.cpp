@@ -8,7 +8,8 @@
 #include "TaxiCenter.h"
 #include "LuxuryCab.h"
 #include "StandardCab.h"
-#include "../sockets/Udp.h"
+#include "../sockets/Tcp.h"
+#include "Server.h"
 
 BOOST_CLASS_EXPORT_GUID(Point, "Point");
 BOOST_CLASS_EXPORT_GUID(LuxuryCab, "LuxuryCab");
@@ -78,28 +79,10 @@ Color createColor (char statusChar) {
  * @param taxiCenter - the taxi center
  * @param grid - map
  */
-void addDriver(TaxiCenter* taxiCenter, Socket* udp){
-    Driver *driver;
-    char buffer[4096];
-    udp->reciveData(buffer, sizeof(buffer));
-    char *end = buffer + 4095;
-    boost::iostreams::basic_array_source<char> device(buffer, end);
-    boost::iostreams::stream<boost::iostreams::basic_array_source<char> > s2(device);
-    boost::archive::binary_iarchive ia(s2);
-    ia >> driver;
-    //getting the driver's cab
-    Cab *driverCab = taxiCenter->getCab(driver->getCabID());
-    driver->setTaxiCab(driverCab);
-    taxiCenter->addDriver(driver);
+void addDriver(TaxiCenter* taxiCenter, Socket* tcp, int driversNum){
+    Server *server = new Server(tcp, driversNum, taxiCenter);
+    server->start();
 
-    //sending the driver's taxi
-    std::string serial_str;
-    boost::iostreams::back_insert_device<std::string> inserter(serial_str);
-    boost::iostreams::stream<boost::iostreams::back_insert_device<std::string> > s(inserter);
-    boost::archive::binary_oarchive oa(s);
-    oa << driverCab;
-    s.flush();
-    udp->sendData(serial_str);
 }
 /**
  * addRide function.
@@ -153,7 +136,7 @@ Node* getDriverLocation(TaxiCenter* taxiCenter){
  * doing it by moveAll function in TaxiCenter.
  * @param taxiCenter - the taxi center.
  */
-void startDriving(TaxiCenter* taxiCenter, Socket* udp){
+void startDriving(TaxiCenter* taxiCenter, Socket* tcp){
     taxiCenter->moveAll();
     Node *loc = taxiCenter->getDriver(0)->getLocation();
     std::string serial_str;
@@ -162,7 +145,11 @@ void startDriving(TaxiCenter* taxiCenter, Socket* udp){
     boost::archive::binary_oarchive oa(s);
     oa << loc;
     s.flush();
-    udp->sendData(serial_str);
+    int driversNum = taxiCenter->getDriversNum();
+    vector<Driver*> drivers = taxiCenter->getDriversList();
+    for (int i = 0; i < driversNum; i++) {
+        tcp->sendData(serial_str, drivers[i]->getClientDescriptor());
+    }
 }
 /**
  * the main flow of the taxi center operations.
@@ -170,7 +157,7 @@ void startDriving(TaxiCenter* taxiCenter, Socket* udp){
  */
 int main(int argc, char* argv[]) {
     //crating a grid
-    int xSize, ySize, x ,y, mission, driversNum;
+    int xSize, ySize, x ,y, mission, driversNum = 0, i;
     char dummy;
     cin >> xSize >> ySize;
     GridTwoD* grid = new GridTwoD(xSize, ySize);
@@ -178,41 +165,60 @@ int main(int argc, char* argv[]) {
     //adding obstacles to the grid
     int obstaclesNum;
     cin >> obstaclesNum;
-    for (int i = 0; i < obstaclesNum; i++) {
+    for (i = 0; i < obstaclesNum; i++) {
         cin >> x >> dummy >> y;
         grid->addObstacle(x, y);
     }
     //creating taxiCenter
     TaxiCenter* taxiCenter = new TaxiCenter(grid);
+
     //creating a socket
-    Socket* udp = new Udp(1, atoi(argv[1]));
-    udp->initialize();
+    cout << "creating socket/ tcp\n";
+    Socket* tcp = new Tcp(1, atoi(argv[1]));
+
+    cout << "initializing\n";
+    tcp->initialize();
+
     do {
         cin >> mission;
         switch (mission) {
             case 1:
+                cout << "case 1\n";
                 cin >> driversNum;
-                addDriver(taxiCenter, udp);
+                addDriver(taxiCenter, tcp, driversNum);
                 break;
             case 2:
+                //CREATE THREAD
+                cout << "case 2\n";
                 addRide(taxiCenter, grid);
                 break;
             case 3:
+                cout << "case 3\n";
                 addVehicle(taxiCenter);
                 break;
             case 4:
+                cout << "case 4\n";
                 cout << *getDriverLocation(taxiCenter);
                 break;
-            case 7:
-                udp->sendData("-1");
-                delete udp;
+            case 7: {
+                cout << "case 7\n";
+                vector<Driver *> drivers = taxiCenter->getDriversList();
+
+                for (i = 0; i < driversNum; i++) {
+
+                    tcp->sendData("7", drivers[i]->getClientDescriptor());
+                }
+
+                delete tcp;
+
                 delete grid;
                 delete taxiCenter;
                 break;
-            case 9: {
-                startDriving(taxiCenter, udp);
-                break;
             }
+            case 9:
+                cout << "case 9\n";
+                startDriving(taxiCenter, tcp);
+                break;
             default:
                 return 0;
         }
