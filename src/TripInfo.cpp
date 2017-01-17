@@ -49,3 +49,19 @@ TripInfo::~TripInfo() {
 double TripInfo::getTime() const{
     return this->time;
 }
+
+void TripInfo::setPath(deque<Node*> path) {
+    TripInfo::path = path;
+}
+
+deque<Node*> TripInfo::getPath() {
+    return this->path;
+}
+
+void TripInfo::setMap(GridTwoD *map) {
+    TripInfo::map = map;
+}
+
+GridTwoD *TripInfo::getMap() const {
+    return map;
+}

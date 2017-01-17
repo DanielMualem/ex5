@@ -9,10 +9,15 @@
 #include "LuxuryCab.h"
 #include "StandardCab.h"
 #include "../sockets/Udp.h"
+#include "../sockets/Tcp.h"
+#include <pthread.h>
 
 BOOST_CLASS_EXPORT_GUID(Point, "Point");
 BOOST_CLASS_EXPORT_GUID(LuxuryCab, "LuxuryCab");
 BOOST_CLASS_EXPORT_GUID(StandardCab, "StandardCab");
+
+pthread_t pathThread;
+vector<pthread_t> clients;
 /**
  * createMartialStat function.
  * @param statusChar - W/D/M/S
@@ -78,10 +83,10 @@ Color createColor (char statusChar) {
  * @param taxiCenter - the taxi center
  * @param grid - map
  */
-void addDriver(TaxiCenter* taxiCenter, Socket* udp){
+void addDriver(TaxiCenter* taxiCenter, Socket* tcp){
     Driver *driver;
     char buffer[4096];
-    udp->reciveData(buffer, sizeof(buffer));
+    tcp->reciveData(buffer, sizeof(buffer));
     char *end = buffer + 4095;
     boost::iostreams::basic_array_source<char> device(buffer, end);
     boost::iostreams::stream<boost::iostreams::basic_array_source<char> > s2(device);
@@ -99,7 +104,7 @@ void addDriver(TaxiCenter* taxiCenter, Socket* udp){
     boost::archive::binary_oarchive oa(s);
     oa << driverCab;
     s.flush();
-    udp->sendData(serial_str);
+    tcp->sendData(serial_str);
 }
 /**
  * addRide function.
@@ -113,7 +118,12 @@ void addRide(TaxiCenter* taxiCenter, GridTwoD* grid) {
     cin >> rideId >> dummy >> xStart >> dummy >> yStart >> dummy >> xEnd >> dummy >>
         yEnd >> dummy >> passengersNum >> dummy >> tariff >> dummy >> time;
     Point** map = grid->getGrid();
-    TripInfo* trip = new TripInfo(rideId, &map[xStart][yStart], &map[xEnd][yEnd], passengersNum, tariff,time);
+    TripInfo* trip = new TripInfo(rideId, &map[xStart][yStart], &map[xEnd][yEnd], passengersNum, tariff, time);
+    trip->setMap(grid);
+    int status = pthread_create(&pathThread, NULL, TaxiCenter::computePathToTrip, (void*) trip);
+    if (status) {
+        //TODO - throw exception (?)
+    }
     taxiCenter->addTrip(trip);
 }
 /**
@@ -185,14 +195,15 @@ int main(int argc, char* argv[]) {
     //creating taxiCenter
     TaxiCenter* taxiCenter = new TaxiCenter(grid);
     //creating a socket
-    Socket* udp = new Udp(1, atoi(argv[1]));
-    udp->initialize();
+    //Socket* udp = new Udp(1, atoi(argv[1]));
+    Socket* tcp = new Tcp(1, atoi(argv[1]));
+    tcp->initialize();
     do {
         cin >> mission;
         switch (mission) {
             case 1:
                 cin >> driversNum;
-                addDriver(taxiCenter, udp);
+                addDriver(taxiCenter, tcp);
                 break;
             case 2:
                 addRide(taxiCenter, grid);
@@ -204,13 +215,14 @@ int main(int argc, char* argv[]) {
                 cout << *getDriverLocation(taxiCenter);
                 break;
             case 7:
-                udp->sendData("-1");
-                delete udp;
+                tcp->sendData("-1");
+                delete tcp;
                 delete grid;
                 delete taxiCenter;
                 break;
             case 9: {
-                startDriving(taxiCenter, udp);
+                pthread_join(pathThread, NULL);
+                startDriving(taxiCenter, tcp);
                 break;
             }
             default:

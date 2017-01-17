@@ -1,4 +1,6 @@
 #include "TaxiCenter.h"
+#include "BFS.h"
+
 /**
  * TaxiCenter ctor.
  * @return - TaxiCenter object.
@@ -71,12 +73,14 @@ void TaxiCenter::moveAll() {
             drivers[i]->move();
         } else if ((trip == NULL) && (!this->trips.empty())) {
             for (int j = 0; j < (int)this->trips.size(); j++) {
-                if (this->trips[j]->getTime() == this->time) {
+                if ((this->trips[j]->getTime() == this->time) &&
+                    (this->drivers[i]->getLocation()->isEqual(this->trips[j]->getStart()))) {
+
                     drivers[i]->setTrip(this->trips[j]);
-                    Point *start = (Point *) this->trips[j]->getStart();
-                    Point *end = (Point *) this->trips[j]->getEnd();
-                    deque<Node*> path = this->map->getPath(start, end);
-                    this->drivers[i]->setPath(path);
+                    //Point *start = (Point *) this->trips[j]->getStart();
+                    //Point *end = (Point *) this->trips[j]->getEnd();
+                    //deque<Node*> path = this->map->getPath(start, end);
+                    this->drivers[i]->setPath(this->trips[j]->getPath());
                     this->map->setAllVisited(false);
                     this->trips.erase(this->trips.begin() + j);
                 }
@@ -102,7 +106,7 @@ TaxiCenter::~TaxiCenter() {
  * assign function
  * assinging a trip to each driver
  */
-void TaxiCenter::assign() {
+/*void TaxiCenter::assign() {
     for (int i = 0; i < (int)drivers.size(); i++) {
         if (drivers[i]->getTrip() == NULL) {
             drivers[i]->setTrip(this->trips[i]);
@@ -112,4 +116,12 @@ void TaxiCenter::assign() {
             this->drivers[i]->setPath(path);
         }
     }
+}*/
+
+void* TaxiCenter::computePathToTrip(void* element) {
+    BFS bfs;
+    TripInfo* trip = (TripInfo*)element;
+    deque<Node*> path = bfs.shortestPathBFS(trip->getMap(), trip->getStart(), trip->getEnd());
+    tr1ip->setPath(path);
+    return NULL;
 }

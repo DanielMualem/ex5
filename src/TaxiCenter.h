@@ -26,5 +26,6 @@ public:
     void moveAll();
     virtual ~TaxiCenter();
     void assign();
+    static void* computePathToTrip(void* element);
 };
 #endif //EX1_TAXICENTER_H

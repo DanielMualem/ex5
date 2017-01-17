@@ -2,7 +2,9 @@
 #define EX1_TRIPINFO_H
 
 #include "Point.h"
+#include "GridTwoD.h"
 #include <boost/serialization/base_object.hpp>
+#include <deque>
 
 /**
  * TripInfo Class.
@@ -18,6 +20,8 @@ private:
     int numOfPass;
     double tariff;
     double time;
+    deque<Node*> path;
+    GridTwoD* map;
 
     friend class boost::serialization::access;
     template<class Archive>
@@ -38,6 +42,12 @@ public:
     Node *getEnd() const;
     virtual ~TripInfo();
     double getTime() const;
+
+    void setPath(deque<Node*> path);
+    deque<Node*> getPath();
+
+    void setMap(GridTwoD *map);
+    GridTwoD *getMap() const;
 };
 
 #endif //EX1_TRIPINFO_H
