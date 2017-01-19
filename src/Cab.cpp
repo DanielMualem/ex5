@@ -51,7 +51,3 @@ int Cab::getCabId() const {
 Cab::~Cab() {
 
 }
-ostream& operator<<(ostream& os, const Cab& obj) {
-    os << obj.toString() << endl;
-    return os;
-}

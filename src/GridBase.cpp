@@ -1,4 +1,3 @@
-
 #include "GridBase.h"
 /**
  * GridBase default constructor.

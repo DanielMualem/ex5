@@ -41,9 +41,6 @@ public:
     int getCabType() const;
     int getCabId() const;
     virtual ~Cab();
-    friend ostream& operator<< (std::ostream &os, const Cab &p);
-    virtual string toString() const = 0;
 };
-//BOOST_SERIALIZATION_ASSUME_ABSTRACT(Cab);
 
 #endif //EX1_CAB_H

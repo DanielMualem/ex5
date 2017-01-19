@@ -1,5 +1,3 @@
-
-
 #ifndef EX3_SERVER_H
 #define EX3_SERVER_H
 
@@ -29,28 +27,24 @@
 using namespace std;
 using namespace boost::iostreams;
 using namespace boost::archive;
-
+/**
+ * Server class
+ */
 class Server {
 private:
     struct ClientData {
-        int client_socket;
         int clientDescriptor;
-        unsigned int client_size;
-        bool online;
-        Server *server;
+        Server* server;
     };
-    int capacity;
+
     int num_of_connections;
-    int server_socket;
-    bool online;
     Socket *tcp;
     TaxiCenter *taxiCenter;
     int driversNum;
-
-    struct sockaddr_in server_details;
-    list<ClientData *> *clients;
+    vector<ClientData *> clients;
     pthread_mutex_t connection_locker;
     pthread_mutex_t list_locker;
+    vector<pthread_t> clientsThreads;
 
 
 public:

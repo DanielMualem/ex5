@@ -43,59 +43,59 @@ MartialStat createMartialStat (char statusChar) {
 }
 
 int main(int argc, char* argv[]) {
-    /*Client client(argv[1], atoi(argv[2]), argv[3]);
-    client.Connect();*/
-
     int id, age, experience, cabId;
     MartialStat status;
     char statusChar, dummy;
+    //getting the driver's details and creating it
     cin >> id >> dummy >> age >> dummy >> statusChar >> dummy >> experience >> dummy >> cabId;
     status = createMartialStat(statusChar);
     Driver* driver = new Driver(id, age, status, experience, cabId);
-
-    cout << "creating client socket/tcp\n";
+    //creating the client's socket
     Socket* tcp = new Tcp(0, atoi(argv[2]), argv[1]);
-
-    cout << "initializing client\n";
+    //initialize the socket
     tcp->initialize();
-
+    //serialize the driver
     std::string serial_str;
     boost::iostreams::back_insert_device<std::string> inserter(serial_str);
     boost::iostreams::stream<boost::iostreams::back_insert_device<std::string> > s(inserter);
     boost::archive::binary_oarchive oa(s);
     oa << driver;
     s.flush();
+    //send the serialized driver
     char buffer[4096];
-    cout << "sending data from client to server\n";
     tcp->sendData(serial_str, 0);
 
     Cab *driverCab;
     char *end = buffer + 4095;
-    cout << "receiving data from server to client\n";
+    //recieve the cab's data from the server and un-serialize it
     tcp->receiveData(buffer, sizeof(buffer), 0);
     boost::iostreams::basic_array_source<char> device(buffer, end);
     boost::iostreams::stream<boost::iostreams::basic_array_source<char> > s2(device);
     boost::archive::binary_iarchive ia(s2);
     ia >> driverCab;
+    //set the taxi as the driver's cab
     driver->setTaxiCab(driverCab);
-    cout << *driverCab;
-    cout << *driver;
+    //a loop that gets and sends messages to the server
     while (true) {
         tcp->receiveData(buffer, sizeof(buffer), 0);
-
+        //if the message was "7"- terminate the client's thread
         if (atoi(buffer) == 7) {
             break;
         } else {
+            //recieve the driver's new location data and de-serialize it
             Node* loc;
             boost::iostreams::basic_array_source<char> device(buffer, end);
             boost::iostreams::stream<boost::iostreams::basic_array_source<char> > s3(device);
             boost::archive::binary_iarchive ia2(s3);
             ia2 >> loc;
             driver->setLocation(loc);
+            //cout << *loc;
             delete loc;
         }
+        //send a message that the data was received
+        tcp->sendData("OK", 0);
     }
-
+    //free all the allocated memory
     delete driverCab;
     delete driver;
     delete tcp;

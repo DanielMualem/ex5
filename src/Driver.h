@@ -60,8 +60,6 @@ public:
     void setPath(deque<Node*> path);
     void setClientDescriptor(int clientDescriptor);
     int getClientDescriptor();
-    string toString() const;
-    friend ostream& operator<<(ostream& os, const Driver& obj);
 };
 
 #endif //EX1_DRIVER_H

@@ -1,7 +1,4 @@
 #include "TaxiCenter.h"
-#include <mutex>
-
-pthread_mutex_t myMutex;
 
 /**
  * TaxiCenter ctor.
@@ -75,13 +72,11 @@ void TaxiCenter::moveAll() {
             drivers[i]->move();
         } else if ((trip == NULL) && (!this->trips.empty())) {
             for (int j = 0; j < (int)this->trips.size(); j++) {
-                if (this->trips[j]->getTime() == this->time) {
+                if ((this->trips[j]->getTime() == this->time) &&
+                    (this->drivers[i]->getLocation()->isEqual(this->trips[j]->getStart()))) {
+
                     drivers[i]->setTrip(this->trips[j]);
-                    Point *start = (Point *) this->trips[j]->getStart();
-                    Point *end = (Point *) this->trips[j]->getEnd();
-                    deque<Node*> path = this->map->getPath(start, end);
-                    this->drivers[i]->setPath(path);
-                    this->map->setAllVisited(false);
+                    this->drivers[i]->setPath(this->trips[j]->getPath());
                     this->trips.erase(this->trips.begin() + j);
                 }
             }
@@ -103,24 +98,28 @@ TaxiCenter::~TaxiCenter() {
     }
 }
 /**
- * assign function
- * assinging a trip to each driver
+ * getDriversNum
+ * @return the taxi center's drivers number
  */
-void TaxiCenter::assign() {
-    for (int i = 0; i < (int)drivers.size(); i++) {
-        if (drivers[i]->getTrip() == NULL) {
-            drivers[i]->setTrip(this->trips[i]);
-            Point *start = (Point *) this->trips[i]->getStart();
-            Point *end = (Point *) this->trips[i]->getEnd();
-            deque<Node *> path = this->map->getPath(start, end);
-            this->drivers[i]->setPath(path);
-        }
-    }
-}
 int TaxiCenter::getDriversNum(){
     return int(this->drivers.size());
 }
-
+/**
+ * getDriversList function
+ * @return the drivers list
+ */
 vector<Driver*> TaxiCenter::getDriversList(){
     return this->drivers;
+}
+/**
+ * computePathToTrip function
+ * @param element the TripInfo element
+ * @return NULL
+ */
+void* TaxiCenter::computePathToTrip(void* element) {
+    BFS bfs;
+    TripInfo* trip = (TripInfo*)element;
+    deque<Node*> path = bfs.shortestPathBFS(trip->getMap(), trip->getStart(), trip->getEnd());
+    trip->setPath(path);
+    return NULL;
 }

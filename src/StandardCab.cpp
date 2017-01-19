@@ -32,17 +32,4 @@ StandardCab::StandardCab() {
  * StandardCab dtor.
  */
 StandardCab::~StandardCab() {
-
 }
-string StandardCab::toString() const{
-
-    stringstream sx;
-    sx << this->cabId;
-    string cabId = sx.str();
-    stringstream sy;
-    sy << this->tariff;
-    string tariff = sy.str();
-
-    return "the cab's id is: " + cabId +  " the tariff is: " + tariff;
-}
-//BOOST_CLASS_EXPORT(StandardCab)

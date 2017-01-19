@@ -26,6 +26,5 @@ public:
     void move();
     virtual ~LuxuryCab();
     LuxuryCab();
-    string toString() const;
 };
 #endif //EX1_LUXURYCAB_H

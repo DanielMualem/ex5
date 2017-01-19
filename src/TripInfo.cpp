@@ -1,5 +1,7 @@
 
 #include "TripInfo.h"
+#include "GridTwoD.h"
+
 /**
  * TripInfo constructor
  * @param id - the trip's id
@@ -48,4 +50,33 @@ TripInfo::~TripInfo() {
  */
 double TripInfo::getTime() const{
     return this->time;
+}
+/**
+ * setPath function
+ * @param path - the path of the trip
+ */
+void TripInfo::setPath(deque<Node*> path) {
+    TripInfo::path = path;
+    this->map->setAllVisited(false);
+}
+/**
+ * getPath function
+ * @return the trip's path
+ */
+deque<Node*> TripInfo::getPath() {
+    return this->path;
+}
+/**
+ * setMap function
+ * @param map - the board's map
+ */
+void TripInfo::setMap(GridTwoD *map) {
+    TripInfo::map = map;
+}
+/**
+ * getMap function
+ * @return the board's map
+ */
+GridTwoD* TripInfo::getMap() const {
+    return map;
 }

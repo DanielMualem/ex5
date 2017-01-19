@@ -6,7 +6,7 @@
  * @param age - the driver's age
  * @param martialStatus - the driver's matiral status
  * @param experienceYears - the driver's years experience
- * @param map - the driver's map
+ * @param taxiCab- the driver's cab
  */
 using namespace std;
 
@@ -22,7 +22,14 @@ Driver::Driver(int id, int age, MartialStat martialStatus, int experienceYears, 
     this->location = new Point(0,0);
     //this->path = NULL;
 }
-
+/**
+ * Driver constructor
+ * @param id - the driver's id
+ * @param age - the driver's age
+ * @param martialStatus - the driver's matiral status
+ * @param experienceYears - the driver's years experience
+ * @param cabId- the driver's cab id
+ */
 Driver::Driver(int id, int age, MartialStat martialStatus, int experienceYears, int cabId){
     this->id = id;
     this->age = age;
@@ -150,25 +157,17 @@ void Driver::setPath(deque<Node*> path){
 int Driver::getCabID() const {
     return cabId;
 }
+/**
+ * setClientDescriptor function
+ * @param clientDescriptor- the client's socket's descriptor
+ */
 void Driver::setClientDescriptor(int clientDescriptor){
     this->clientDescriptor = clientDescriptor;
 }
+/**
+ * getClientDescriptor function
+ * @return clientDescriptor- the driver's socket's descriptor
+ */
 int Driver::getClientDescriptor(){
     return this->clientDescriptor;
-}
-ostream& operator<<(ostream& os, const Driver& obj) {
-    os << obj.toString() << endl;
-    return os;
-}
-
-string Driver::toString() const {
-
-    stringstream sx;
-    sx << this->cabId;
-    string cabId = sx.str();
-    stringstream sy;
-    sy << this->age;
-    string age = sy.str();
-
-    return "my id is: " + cabId + " my age is: " + age;
 }

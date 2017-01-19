@@ -159,5 +159,3 @@ bool Point::isObstacle() const {
 void Point::setObstacle(bool obstacle) {
     Point::obstacle = obstacle;
 }
-
-//BOOST_CLASS_EXPORT(Point);

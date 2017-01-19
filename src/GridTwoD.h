@@ -15,28 +15,17 @@ private:
     Point **map;
     Point size;
 
-
 public:
     GridTwoD();
-
     GridTwoD(int x, int y);
-
     void buildGrid();
-
     vector<Node *> getSons(Node *node);
-
     Point **getGrid();
-
     void setAllVisited(bool isVisited);
-
     void shortestPath(GridBase *grid, Node *start, Node *end);
-
     virtual ~GridTwoD();
-
     const Point getSize() const;
-
     void addObstacle(int x, int y);
-
     deque<Node*> getPath(Node *start, Node *end);
 };
 

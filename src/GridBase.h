@@ -1,4 +1,3 @@
-
 #ifndef EX1_1_GRID_H
 #define EX1_1_GRID_H
 
